@@ -1,20 +1,46 @@
-// calculate geometric mean off-chain by a DON then return the result
-// valures provided in args array
+// This example shows how to make a call to an open API (no authentication required)
+// to retrieve asset price from a symbol(e.g., ETH) to another symbol (e.g., USD)
 
-console.log(`calculate geometric mean of ${args}`)
+// CryptoCompare API https://min-api.cryptocompare.com/documentation?key=Price&cat=multipleSymbolsFullPriceEndpoint
 
-// make sure arguments are provided
-if (!args || args.length === 0) throw new Error("input not provided")
+// Refer to https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code
 
-const product = args.reduce((accumulator, currentValue) => {
-  const numValue = parseInt(currentValue)
-  if (isNaN(numValue)) throw Error(`${currentValue} is not a number`)
-  return accumulator * numValue
-}, 1) // calculate the product of numbers provided in args array
+// Arguments can be provided when a request is initated on-chain and used in the request source code as shown below
+const fromSymbol = args[0]
+const toSymbol = args[1]
 
-const geometricMean = Math.pow(product, 1 / args.length) // geometric mean = length-root of (product)
-console.log(`geometric mean is: ${geometricMean.toFixed(2)}`)
+// make HTTP request
+const url = `https://min-api.cryptocompare.com/data/pricemultifull`
+console.log(`HTTP GET Request to ${url}?fsyms=${fromSymbol}&tsyms=${toSymbol}`)
 
-// Decimals are not handled in Solidity so multiply by 100 (for 2 decimals) and round to the nearest integer
-// Functions.encodeUint256: Return a buffer from uint256
-return Functions.encodeUint256(Math.round(geometricMean * 100))
+// construct the HTTP Request object. See: https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code
+// params used for URL query parameters
+// Example of query: https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD
+const cryptoCompareRequest = Functions.makeHttpRequest({
+  url: url,
+  params: {
+    fsyms: fromSymbol,
+    tsyms: toSymbol,
+  },
+})
+
+// Execute the API request (Promise)
+const cryptoCompareResponse = await cryptoCompareRequest
+if (cryptoCompareResponse.error) {
+  console.error(cryptoCompareResponse.error)
+  throw Error("Request failed")
+}
+
+const data = cryptoCompareResponse["data"]
+if (data.Response === "Error") {
+  console.error(data.Message)
+  throw Error(`Functional error. Read message: ${data.Message}`)
+}
+
+// extract the price
+const price = data["RAW"][fromSymbol][toSymbol]["PRICE"]
+console.log(`${fromSymbol} price is: ${price.toFixed(2)} ${toSymbol}`)
+
+// Solidity doesn't support decimals so multiply by 100 and round to the nearest integer
+// Use Functions.encodeUint256 to encode an unsigned integer to a Buffer
+return Functions.encodeUint256(Math.round(price * 100))

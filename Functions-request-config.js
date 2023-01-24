@@ -24,7 +24,7 @@ const ReturnType = {
 
 // Configure the request by setting the fields below
 const requestConfig = {
-  // location of source code (only Inline is currently supported)
+  // location of source code (only Inline is curently supported)
   codeLocation: Location.Inline,
   // location of secrets (Inline or Remote)
   secretsLocation: Location.Inline,
@@ -33,7 +33,7 @@ const requestConfig = {
   // string containing the source code to be executed
   source: fs.readFileSync("./Functions-request-source.js").toString(),
   // args can be accessed within the source code with `args[index]` (ie: args[0])
-  args: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+  args: ["ETH", "USD"],
   // expected type of the returned value
   expectedReturnType: ReturnType.uint256,
   // Redundant URLs which point to encrypted off-chain secrets
