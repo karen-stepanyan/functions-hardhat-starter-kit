@@ -37,10 +37,21 @@ if (data.Response === "Error") {
   throw Error(`Functional error. Read message: ${data.Message}`)
 }
 
-// extract the price
-const price = data["RAW"][fromSymbol][toSymbol]["PRICE"]
-console.log(`${fromSymbol} price is: ${price.toFixed(2)} ${toSymbol}`)
+// extract the price, volume and lastMarket
+const { PRICE: price, VOLUME24HOUR: volume, LASTMARKET: lastMarket } = data["RAW"][fromSymbol][toSymbol]
+console.log(
+  `${fromSymbol} price is: ${price.toFixed(2)} ${toSymbol}. 24h Volume is ${volume.toFixed(
+    2
+  )} ${toSymbol}. Market: ${lastMarket}`
+)
+
+const result = {
+  price: Math.round(price * 100),
+  volume: Math.round(volume * 100),
+  lastMarket,
+}
 
 // Solidity doesn't support decimals so multiply by 100 and round to the nearest integer
 // Use Functions.encodeUint256 to encode an unsigned integer to a Buffer
-return Functions.encodeUint256(Math.round(price * 100))
+
+return Buffer.from(JSON.stringify(result))
