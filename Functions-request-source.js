@@ -51,7 +51,4 @@ const result = {
   lastMarket,
 }
 
-// Solidity doesn't support decimals so multiply by 100 and round to the nearest integer
-// Use Functions.encodeUint256 to encode an unsigned integer to a Buffer
-
-return Buffer.from(JSON.stringify(result))
+return Functions.encodeString(JSON.stringify(result))
