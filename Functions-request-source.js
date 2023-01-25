@@ -1,57 +1,47 @@
-// This example shows how to make a call to an open API (no authentication required)
-// to retrieve asset price from a symbol(e.g., ETH) to another symbol (e.g., USD)
-
-// CryptoCompare API https://min-api.cryptocompare.com/documentation?key=Price&cat=multipleSymbolsFullPriceEndpoint
-
-// Refer to https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code
-
-// Arguments can be provided when a request is initated on-chain and used in the request source code as shown below
-const fromSymbol = args[0]
-const toSymbol = args[1]
+// No authentication. demonstrate POST with data in body
+// callgraphql api: https://github.com/trevorblades/countries
+// docs: https://trevorblades.github.io/countries/queries/continent
 
 // make HTTP request
-const url = `https://min-api.cryptocompare.com/data/pricemultifull`
-console.log(`HTTP GET Request to ${url}?fsyms=${fromSymbol}&tsyms=${toSymbol}`)
-
-// construct the HTTP Request object. See: https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code
-// params used for URL query parameters
-// Example of query: https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD
-const cryptoCompareRequest = Functions.makeHttpRequest({
+const countryCode = args[0]
+const url = "https://countries.trevorblades.com/"
+console.log(`Get name, capital and currency for country code: ${countryCode}`)
+console.log(`HTTP POST Request to ${url}`)
+const countryRequest = Functions.makeHttpRequest({
   url: url,
-  params: {
-    fsyms: fromSymbol,
-    tsyms: toSymbol,
+  method: "POST",
+  data: {
+    query: `{\
+        country(code: "${countryCode}") { \
+          name \
+          capital \
+          currency \
+        } \
+      }`,
   },
 })
 
 // Execute the API request (Promise)
-const cryptoCompareResponse = await cryptoCompareRequest
-if (cryptoCompareResponse.error) {
-  console.error(cryptoCompareResponse.error)
+const countryResponse = await countryRequest
+if (countryResponse.error) {
+  console.error(
+    countryResponse.response ? `${countryResponse.response.status},${countryResponse.response.statusText}` : ""
+  )
   throw Error("Request failed")
 }
 
-const data = cryptoCompareResponse["data"]
-if (data.Response === "Error") {
-  console.error(data.Message)
-  throw Error(`Functional error. Read message: ${data.Message}`)
+const countryData = countryResponse["data"]["data"]
+
+if (!countryData || !countryData.country) {
+  throw Error(`Make sure the country code "${countryCode}" exists`)
 }
 
-// extract the price, volume and lastMarket
-const { PRICE: price, VOLUME24HOUR: volume, LASTMARKET: lastMarket } = data["RAW"][fromSymbol][toSymbol]
-console.log(
-  `${fromSymbol} price is: ${price.toFixed(2)} ${toSymbol}. 24h Volume is ${volume.toFixed(
-    2
-  )} ${toSymbol}. Market: ${lastMarket}`
-)
+console.log("country response", countryData)
 
 const result = {
-  price: Math.round(price * 100),
-  volume: Math.round(volume * 100),
-  lastMarket,
+  name: countryData.country.name,
+  capital: countryData.country.capital,
+  currency: countryData.country.currency,
 }
 
-// Solidity doesn't support decimals so multiply by 100 and round to the nearest integer
-// Use Functions.encodeUint256 to encode an unsigned integer to a Buffer
-
-return Buffer.from(JSON.stringify(result))
+return Functions.encodeString(JSON.stringify(result))
