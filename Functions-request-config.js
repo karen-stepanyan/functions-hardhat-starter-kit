@@ -35,13 +35,7 @@ const requestConfig = {
   // args can be accessed within the source code with `args[index]` (ie: args[0])
   args: ["ETH", "USD"],
   // expected type of the returned value
-  expectedReturnType: ReturnType.uint256,
-  // Redundant URLs which point to encrypted off-chain secrets
-  secretsURLs: [],
-  // Default offchain secrets object used by the `functions-build-offchain-secrets` command
-  globalOffchainSecrets: {},
-  // Per-node offchain secrets objects used by the `functions-build-offchain-secrets` command
-  perNodeOffchainSecrets: [],
+  expectedReturnType: ReturnType.string,
 }
 
 module.exports = requestConfig
