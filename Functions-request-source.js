@@ -45,10 +45,13 @@ console.log(
   )} ${toSymbol}. Market: ${lastMarket}`
 )
 
+// The final result is a JSON object
 const result = {
-  price: Math.round(price * 100),
-  volume: Math.round(volume * 100),
+  price: price.toFixed(2),
+  volume: volume.toFixed(2),
   lastMarket,
 }
 
+// Convert JSON object to a string using JSON.stringify()
+// Then encode it to a a bytes using the helper Functions.encodeString
 return Functions.encodeString(JSON.stringify(result))
