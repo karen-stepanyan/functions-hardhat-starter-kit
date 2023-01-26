@@ -38,10 +38,13 @@ if (!countryData || !countryData.country) {
 
 console.log("country response", countryData)
 
+// result is in JSON object
 const result = {
   name: countryData.country.name,
   capital: countryData.country.capital,
   currency: countryData.country.currency,
 }
 
+// Use JSON.stringify() to convert from JSON object to JSON string
+// Finally, use the helper Functions.encodeString() to encode from string to bytes
 return Functions.encodeString(JSON.stringify(result))
